@@ -1,17 +1,20 @@
-use super::Value;
+use super::value::Value;
+use std::fmt::Debug;
 
-#[derive(Debug)]
+#[repr(u8)]
 pub enum OpCode {
-    OpConstant,
+    OpConstant(Value),
     OpReturn,
 }
 
-impl From<&u8> for OpCode {
-    fn from(value: &u8) -> Self {
-        match value {
-            0 => OpCode::OpConstant,
-            1 => OpCode::OpReturn,
-            _ => panic!("Unkonown code"),
-        }
+impl Debug for OpCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let op_code = match self {
+            OpCode::OpConstant(_) => "OP_CONSTANT",
+            OpCode::OpReturn => "OP_RETURN",
+            // _ => panic!("Unkonown operation code."),
+        };
+
+        write!(f, "{op_code}")
     }
 }

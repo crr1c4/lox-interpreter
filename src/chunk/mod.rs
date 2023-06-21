@@ -5,21 +5,25 @@ pub mod op_code;
 pub mod value;
 
 pub struct Chunk {
-    code: Vec<OpCode>,
+    codes: Vec<OpCode>,
     lines: Vec<u32>,
 }
 
 impl Chunk {
     pub fn new() -> Self {
         Self {
-            code: vec![],
+            codes: vec![],
             lines: vec![],
         }
     }
 
     pub fn write(&mut self, byte: OpCode, line: u32) {
-        self.code.push(byte);
+        self.codes.push(byte);
         self.lines.push(line);
+    }
+
+    pub fn get_codes(&self) -> &Vec<OpCode> {
+        &self.codes
     }
 }
 
@@ -33,14 +37,19 @@ impl Debug for Chunk {
             };
 
             match code {
-                OpCode::OpConstant(value) => {
-                    format!("{:04}\t{} {:?}\t\t{}\n", idx, line, code, value)
+                OpCode::Constant(value) => {
+                    format!("{:04}\t{} {:?}\t{}\n", idx, line, code, value)
                 }
-                OpCode::OpReturn => format!("{:04}\t{} {:?}\n", idx, line, code),
+                OpCode::Return
+                | OpCode::Negate
+                | OpCode::Add
+                | OpCode::Subtract
+                | OpCode::Multiply
+                | OpCode::Divide => format!("{:04}\t{} {:?}\n", idx, line, code),
             }
         };
 
-        let output: Vec<String> = self.code.iter().enumerate().map(manage_code).collect();
+        let output: Vec<String> = self.codes.iter().enumerate().map(manage_code).collect();
         write!(f, "{}", output.join(""))
     }
 }
@@ -88,4 +97,27 @@ impl Debug for Chunk {
 
 //         write!(f, "{}", output)
 //     }
+// }
+
+// trait Debug {
+//     fn dissamble(&mut self, name: &str);
+//     fn dissamble_instruction(chunk: &Chunk, offset: usize);
+// }
+
+// impl Debug for Chunk {
+//     fn dissamble(&mut self, name: &str) {
+//         println!("== {name} ==");
+
+//         for instruction in self.code.iter() {
+//             match instruction {
+//                 OpCode::Constant(value) => {
+//                     println!("{:04}\t{} {:?}\t\t{}\n", idx, line, code, value)
+//                 }
+//                 OpCode::Return => format!("{:04}\t{} {:?}\n", idx, line, code),
+//                 _ => "".to_string(),
+//             }
+//         }
+//     }
+
+//     fn dissamble_instruction(chunk: &Chunk, offset: usize) {}
 // }

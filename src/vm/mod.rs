@@ -1,10 +1,14 @@
 use crate::chunk::op_code::OpCode;
 use crate::chunk::value::Value;
 use crate::chunk::Chunk;
-use interpret_result::InterpretResult;
-use std::error::Error;
+use crate::compiler::compile;
 
-pub mod interpret_result;
+#[derive(Debug)]
+pub enum InterpretResult {
+    Ok,
+    CompileError,
+    RuntimeError,
+}
 
 macro_rules! binary_operation {
     ($x: expr, $y: expr, $op: tt) => {
@@ -25,7 +29,12 @@ impl VirtualMachine {
         }
     }
 
-    pub fn interpret(&mut self) -> Result<InterpretResult, Box<dyn Error>> {
+    pub fn interpret(source: String) -> InterpretResult {
+        compile(source);
+        InterpretResult::Ok
+    }
+
+    pub fn run(&mut self) -> InterpretResult {
         for code in self.chunk.get_codes() {
             match code {
                 OpCode::Constant(value) => self.stack.push(*value),
@@ -34,12 +43,12 @@ impl VirtualMachine {
                     None => panic!("Empty stack!"),
                 },
                 OpCode::Negate => {
-                    let value = self.stack.pop().unwrap_or_else(|| panic!("Empty stack"));
+                    let value = self.stack.pop().expect("Empty stack");
                     self.stack.push(-value);
                 }
                 OpCode::Add | OpCode::Subtract | OpCode::Multiply | OpCode::Divide => {
-                    let a = self.stack.pop().unwrap_or_else(|| panic!("Empty stack"));
-                    let b = self.stack.pop().unwrap_or_else(|| panic!("Empty stack"));
+                    let a = self.stack.pop().expect("Empty stack");
+                    let b = self.stack.pop().expect("Empty stack");
 
                     let c = match code {
                         OpCode::Add => binary_operation!(a, b , +),
@@ -54,7 +63,7 @@ impl VirtualMachine {
             }
         }
 
-        Ok(InterpretResult::Ok)
+        InterpretResult::Ok
     }
 }
 
